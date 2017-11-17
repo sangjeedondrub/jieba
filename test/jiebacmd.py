@@ -12,17 +12,15 @@ sys.path.append("../")
 
 import jieba
 
-default_encoding='utf-8'
+default_encoding = 'utf-8'
 
-if len(sys.argv)>1:
+if len(sys.argv) > 1:
     default_encoding = sys.argv[1]
 
 while True:
     line = sys.stdin.readline()
-    if line=="":
+    if line == "":
         break
     line = line.strip()
     for word in jieba.cut(line):
         print(word)
-
-

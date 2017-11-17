@@ -1,30 +1,42 @@
-from __future__ import absolute_import, unicode_literals
+# TODO get deeper understanding to why import __future__
+from __future__ import absolute_import
+from __future__ import unicode_literals
 __version__ = '0.39'
 __license__ = 'MIT'
 
-import re
-import os
-import sys
-import time
 import logging
 import marshal
+import os
+import re
+import sys
 import tempfile
 import threading
-from math import log
-from hashlib import md5
-from ._compat import *
-from . import finalseg
+import time
 
+from . import finalseg
+from ._compat import *
+from hashlib import md5
+from math import log
+
+# windows 和 *nix 系统中不同的文件重命名方式
 if os.name == 'nt':
     from shutil import move as _replace_file
 else:
     _replace_file = os.rename
 
-_get_abs_path = lambda path: os.path.normpath(os.path.join(os.getcwd(), path))
 
+def _get_abs_path(path):
+    """
+    获得 jieba 目录的绝对路径
+    """
+    return os.path.normpath(os.path.join(os.getcwd(), path))
+
+
+# 默认词典
 DEFAULT_DICT = None
 DEFAULT_DICT_NAME = "dict.txt"
 
+# loging handler
 log_console = logging.StreamHandler(sys.stderr)
 default_logger = logging.getLogger(__name__)
 default_logger.setLevel(logging.DEBUG)
@@ -34,22 +46,38 @@ DICT_WRITING = {}
 
 pool = None
 
+# re.U -> unicode flag for regex pattern
 re_userdict = re.compile('^(.+?)( [0-9]+)?( [a-z]+)?$', re.U)
 
+# 英文和数字
 re_eng = re.compile('[a-zA-Z0-9]', re.U)
 
 # \u4E00-\u9FD5a-zA-Z0-9+#&\._ : All non-space characters. Will be handled with re_han
 # \r\n|\s : whitespace characters. Will not be handled.
+
+# 汉字、数字、标点
 re_han_default = re.compile("([\u4E00-\u9FD5a-zA-Z0-9+#&\._%]+)", re.U)
+
+# 空格 -> 不会被处理
 re_skip_default = re.compile("(\r\n|\s)", re.U)
+
+# 光有汉字
 re_han_cut_all = re.compile("([\u4E00-\u9FD5]+)", re.U)
+
+# 光有字母和数字
 re_skip_cut_all = re.compile("[^a-zA-Z0-9+#\n]", re.U)
 
+
+# loging 等级设定
 def setLogLevel(log_level):
     global logger
     default_logger.setLevel(log_level)
 
+
 class Tokenizer(object):
+    """
+    分词类
+    """
 
     def __init__(self, dictionary=DEFAULT_DICT):
         self.lock = threading.RLock()
@@ -126,7 +154,7 @@ class Tokenizer(object):
 
             load_from_cache_fail = True
             if os.path.isfile(cache_file) and (abs_path == DEFAULT_DICT or
-                os.path.getmtime(cache_file) > os.path.getmtime(abs_path)):
+                                               os.path.getmtime(cache_file) > os.path.getmtime(abs_path)):
                 default_logger.debug(
                     "Loading model from cache %s" % cache_file)
                 try:
