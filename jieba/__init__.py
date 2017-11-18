@@ -112,10 +112,12 @@ class Tokenizer(object):
                         lfreq[wfrag] = 0
             except ValueError:
                 raise ValueError(
-                    'invalid dictionary entry in %s at Line %s: %s' % (f_name, lineno, line))
+                    'invalid dictionary entry in %s at Line %s: %s' %
+                    (f_name, lineno, line))
         f.close()
         return lfreq, ltotal
 
+    # 初始化
     def initialize(self, dictionary=None):
         if dictionary:
             abs_path = _get_abs_path(dictionary)
@@ -136,27 +138,28 @@ class Tokenizer(object):
             if self.initialized:
                 return
 
-            default_logger.debug("Building prefix dict from %s ..." % (abs_path or 'the default dictionary'))
+            default_logger.debug("Building prefix dict from %s ..." %
+                                 (abs_path or 'the default dictionary'))
             t1 = time.time()
             if self.cache_file:
                 cache_file = self.cache_file
             # default dictionary
             elif abs_path == DEFAULT_DICT:
                 cache_file = "jieba.cache"
-            # custom dictionary
+            # 自定义词典
             else:
                 cache_file = "jieba.u%s.cache" % md5(
                     abs_path.encode('utf-8', 'replace')).hexdigest()
-            cache_file = os.path.join(
-                self.tmp_dir or tempfile.gettempdir(), cache_file)
+            cache_file = os.path.join(self.tmp_dir or tempfile.gettempdir(),
+                                      cache_file)
             # prevent absolute path in self.cache_file
             tmpdir = os.path.dirname(cache_file)
 
             load_from_cache_fail = True
-            if os.path.isfile(cache_file) and (abs_path == DEFAULT_DICT or
-                                               os.path.getmtime(cache_file) > os.path.getmtime(abs_path)):
-                default_logger.debug(
-                    "Loading model from cache %s" % cache_file)
+            if os.path.isfile(cache_file) and (
+                    abs_path == DEFAULT_DICT or
+                    os.path.getmtime(cache_file) > os.path.getmtime(abs_path)):
+                default_logger.debug("Loading model from cache %s" % cache_file)
                 try:
                     with open(cache_file, 'rb') as cf:
                         self.FREQ, self.total = marshal.load(cf)
@@ -168,15 +171,16 @@ class Tokenizer(object):
                 wlock = DICT_WRITING.get(abs_path, threading.RLock())
                 DICT_WRITING[abs_path] = wlock
                 with wlock:
-                    self.FREQ, self.total = self.gen_pfdict(self.get_dict_file())
+                    self.FREQ, self.total = self.gen_pfdict(
+                        self.get_dict_file())
                     default_logger.debug(
                         "Dumping model to file cache %s" % cache_file)
                     try:
                         # prevent moving across different filesystems
                         fd, fpath = tempfile.mkstemp(dir=tmpdir)
                         with os.fdopen(fd, 'wb') as temp_cache_file:
-                            marshal.dump(
-                                (self.FREQ, self.total), temp_cache_file)
+                            marshal.dump((self.FREQ, self.total),
+                                         temp_cache_file)
                         _replace_file(fpath, cache_file)
                     except Exception:
                         default_logger.exception("Dump cache file failed.")
@@ -187,10 +191,11 @@ class Tokenizer(object):
                     pass
 
             self.initialized = True
-            default_logger.debug(
-                "Loading model cost %.3f seconds." % (time.time() - t1))
+            default_logger.debug("Loading model cost %.3f seconds." %
+                                 (time.time() - t1))
             default_logger.debug("Prefix dict has been built succesfully.")
 
+    # 如果初始化没有完成则继续初始化
     def check_initialized(self):
         if not self.initialized:
             self.initialize()
@@ -306,6 +311,13 @@ class Tokenizer(object):
             - sentence: The str(unicode) to be segmented.
             - cut_all: Model type. True for full pattern, False for accurate pattern.
             - HMM: Whether to use the Hidden Markov Model.
+
+        切分词的主函数
+
+        参数:
+        - sentence,句子,要被切分的句子
+        - cut_all, 全切分模式
+        - HMM, 是否启用 HMM
         '''
         sentence = strdecode(sentence)
 
@@ -408,7 +420,8 @@ class Tokenizer(object):
                 try:
                     line = line.decode('utf-8').lstrip('\ufeff')
                 except UnicodeDecodeError:
-                    raise ValueError('dictionary file %s must be utf-8' % f_name)
+                    raise ValueError(
+                        'dictionary file %s must be utf-8' % f_name)
             if not line:
                 continue
             # match won't be None because there's at least one character

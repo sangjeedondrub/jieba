@@ -22,22 +22,28 @@ if PY2:
     text_type = unicode
     string_types = (str, unicode)
 
-    def iterkeys(d): return d.iterkeys()
+    def iterkeys(d):
+        return d.iterkeys()
 
-    def itervalues(d): return d.itervalues()
+    def itervalues(d):
+        return d.itervalues()
 
-    def iteritems(d): return d.iteritems()
+    def iteritems(d):
+        return d.iteritems()
 
 else:
     text_type = str
     string_types = (str,)
     xrange = range
 
-    def iterkeys(d): return iter(d.keys())
+    def iterkeys(d):
+        return iter(d.keys())
 
-    def itervalues(d): return iter(d.values())
+    def itervalues(d):
+        return iter(d.values())
 
-    def iteritems(d): return iter(d.items())
+    def iteritems(d):
+        return iter(d.items())
 
 
 # 解码字符串
